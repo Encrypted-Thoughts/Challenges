@@ -12,12 +12,15 @@ import java.util.List;
 
 public class ChallengesConfig {
     public SpawnConfig SpawnSettings = new SpawnConfig();
+
     public ArrayList<String> ChallengeDimensions = new ArrayList<>(List.of(
             "minecraft:overworld",
             "minecraft:the_nether"
     ));
 
-    public boolean ReadFromFile() {
+    public String DefaultChallengeDimension = "minecraft:overworld";
+
+    public void ReadFromFile() {
         Path path = FabricLoader.getInstance().getConfigDir();
         var file = path.resolve("challenges.json").toFile();
         if (file.exists()) {
@@ -26,15 +29,13 @@ public class ChallengesConfig {
                 var temp = gson.fromJson(new FileReader(file), this.getClass());
                 SpawnSettings = temp.SpawnSettings;
                 ChallengeDimensions = temp.ChallengeDimensions;
+                DefaultChallengeDimension = temp.DefaultChallengeDimension;
             } catch (FileNotFoundException e) {
                 ChallengesMod.LOGGER.error("Failed to read a config file.");
                 e.printStackTrace();
-                return false;
             }
         } else
-            return false;
-
-        return true;
+            SaveToFile();
     }
 
     public void SaveToFile() {
