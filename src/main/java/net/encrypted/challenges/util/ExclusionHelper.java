@@ -1,6 +1,5 @@
 package net.encrypted.challenges.util;
 
-import net.minecraft.block.Block;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -248,38 +247,122 @@ public class ExclusionHelper {
             EntityType.ZOMBIE_HORSE
     ));
 
-    public static ArrayList<Item> getPossibleItems() {
-        var returnItems = new ArrayList<Item>();
+    public static ArrayList<Item> BreakableItems = new ArrayList<>(List.of(
+            Items.SHEARS,
+            Items.ELYTRA,
+            Items.TURTLE_HELMET,
+            Items.BRUSH,
+            Items.FISHING_ROD,
+            Items.CARROT_ON_A_STICK,
+            Items.WARPED_FUNGUS_ON_A_STICK,
+            Items.BOW,
+            Items.SHIELD,
+            Items.CROSSBOW,
+            Items.FLINT_AND_STEEL,
+            Items.TRIDENT,
+
+            Items.LEATHER_BOOTS,
+            Items.LEATHER_HELMET,
+            Items.LEATHER_CHESTPLATE,
+            Items.LEATHER_LEGGINGS,
+            Items.WOODEN_AXE,
+            Items.WOODEN_HOE,
+            Items.WOODEN_PICKAXE,
+            Items.WOODEN_SHOVEL,
+            Items.WOODEN_SWORD,
+            Items.STONE_AXE,
+            Items.STONE_HOE,
+            Items.STONE_PICKAXE,
+            Items.STONE_SHOVEL,
+            Items.STONE_SWORD,
+            Items.CHAINMAIL_LEGGINGS,
+            Items.CHAINMAIL_BOOTS,
+            Items.CHAINMAIL_CHESTPLATE,
+            Items.CHAINMAIL_HELMET,
+            Items.IRON_AXE,
+            Items.IRON_HOE,
+            Items.IRON_PICKAXE,
+            Items.IRON_SHOVEL,
+            Items.IRON_SWORD,
+            Items.IRON_LEGGINGS,
+            Items.IRON_BOOTS,
+            Items.IRON_CHESTPLATE,
+            Items.IRON_HELMET,
+            Items.GOLDEN_AXE,
+            Items.GOLDEN_HOE,
+            Items.GOLDEN_PICKAXE,
+            Items.GOLDEN_SHOVEL,
+            Items.GOLDEN_SWORD,
+            Items.GOLDEN_LEGGINGS,
+            Items.GOLDEN_BOOTS,
+            Items.GOLDEN_CHESTPLATE,
+            Items.GOLDEN_HELMET,
+            Items.DIAMOND_AXE,
+            Items.DIAMOND_HOE,
+            Items.DIAMOND_PICKAXE,
+            Items.DIAMOND_SHOVEL,
+            Items.DIAMOND_SWORD,
+            Items.DIAMOND_LEGGINGS,
+            Items.DIAMOND_BOOTS,
+            Items.DIAMOND_CHESTPLATE,
+            Items.DIAMOND_HELMET,
+            Items.NETHERITE_AXE,
+            Items.NETHERITE_HOE,
+            Items.NETHERITE_PICKAXE,
+            Items.NETHERITE_SHOVEL,
+            Items.NETHERITE_SWORD,
+            Items.NETHERITE_LEGGINGS,
+            Items.NETHERITE_BOOTS,
+            Items.NETHERITE_CHESTPLATE,
+            Items.NETHERITE_HELMET
+    ));
+
+    public static ArrayList<String> getPossibleItems(String filter) {
+        var returnItems = new ArrayList<String>();
         for (var item : Registries.ITEM) {
-            if (!CreativeOnlyItems.contains(item))
-                returnItems.add(item);
+            var id = Registries.ITEM.getId(item).toString();
+            if (id.toLowerCase().contains(filter) && !CreativeOnlyItems.contains(item))
+                returnItems.add(id);
         }
         return returnItems;
     }
 
-    public static ArrayList<Block> getPossibleBlocks() {
-        var returnBlocks = new ArrayList<Block>();
+    public static ArrayList<String> getBreakableItems(String filter) {
+        var returnItems = new ArrayList<String>();
+        for (var item : BreakableItems) {
+            var id = Registries.ITEM.getId(item).toString();
+            if (id.toLowerCase().contains(filter))
+                returnItems.add(id);
+        }
+        return returnItems;
+    }
+
+    public static ArrayList<String> getPossibleBlocks(String filter) {
+        var returnBlocks = new ArrayList<String>();
         for (var block : Registries.BLOCK) {
-            if (!CreativeOnlyItems.contains(block.asItem()))
-                returnBlocks.add(block);
+            var id = Registries.BLOCK.getId(block).toString();
+            if (id.toLowerCase().contains(filter) && !CreativeOnlyItems.contains(block.asItem()))
+                returnBlocks.add(id);
         }
         return returnBlocks;
     }
 
-    public static ArrayList<EntityType<?>> getPossibleToKillEntities() {
-        var returnEntities = new ArrayList<EntityType<?>>();
+    public static ArrayList<String> getPossibleToKillEntities(String filter) {
+        var returnEntities = new ArrayList<String>();
         for (var entity : Registries.ENTITY_TYPE) {
-            if (!ImpossibleToKillEntities.contains(entity))
-                returnEntities.add(entity);
+            var id = Registries.ENTITY_TYPE.getId(entity).toString();
+            if (id.toLowerCase().contains(filter) && !ImpossibleToKillEntities.contains(entity))
+                returnEntities.add(id);
         }
         return returnEntities;
     }
 
-    public static ArrayList<EntityType<?>> getPossibleToBeKillByEntities() {
-        var returnEntities = new ArrayList<EntityType<?>>();
+    public static ArrayList<String> getPossibleToBeKillByEntities(String filter) {
+        var returnEntities = new ArrayList<String>();
         for (var entity : Registries.ENTITY_TYPE) {
-            if (!ImpossibleToBeKillByEntities.contains(entity))
-                returnEntities.add(entity);
+            var id = Registries.ENTITY_TYPE.getId(entity).toString();
+            if (id.toLowerCase().contains(filter) && !ImpossibleToBeKillByEntities.contains(entity))
+                returnEntities.add(id);
         }
         return returnEntities;
     }

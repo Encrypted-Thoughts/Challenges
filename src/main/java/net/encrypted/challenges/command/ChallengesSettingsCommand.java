@@ -213,18 +213,12 @@ public class ChallengesSettingsCommand {
                                                 for (var stat : Stats.CUSTOM)
                                                     statList.add(stat.getValue().toString());
                                             }
-                                            case "Mined" -> {
-                                                for (var block : Registries.BLOCK.stream().toList())
-                                                    statList.add(Registries.BLOCK.getId(block).toString());
-                                            }
-                                            case "Crafted", "Used", "Broken", "Picked_Up", "Dropped" -> {
-                                                for (var item : Registries.ITEM)
-                                                    statList.add(Registries.ITEM.getId(item).toString());
-                                            }
-                                            case "Killed", "Killed_By" -> {
-                                                for (var entity : Registries.ENTITY_TYPE)
-                                                    statList.add(Registries.ENTITY_TYPE.getId(entity).toString());
-                                            }
+                                            case "Mined" -> statList.addAll(ExclusionHelper.getPossibleBlocks(""));
+                                            case "Broken"-> statList.addAll(ExclusionHelper.getBreakableItems(""));
+                                            case "Crafted"-> statList.addAll(ExclusionHelper.getPossibleItems(""));
+                                            case "Used", "Picked_Up", "Dropped" -> statList.addAll(ExclusionHelper.getPossibleItems(""));
+                                            case "Killed" -> statList.addAll(ExclusionHelper.getPossibleToKillEntities(""));
+                                            case "Killed_By" -> statList.addAll(ExclusionHelper.getPossibleToBeKillByEntities(""));
                                         }
 
                                         Collections.shuffle(statList);
@@ -341,32 +335,28 @@ public class ChallengesSettingsCommand {
                 }
             }
             case "Mined" -> {
-                for (var block : ExclusionHelper.getPossibleBlocks()) {
-                    var id = Registries.BLOCK.getId(block).toString();
-                    if (id.toLowerCase().contains(builder.getRemainingLowerCase()))
-                        builder.suggest(id);
-                }
+                for (var block : ExclusionHelper.getPossibleBlocks(builder.getRemainingLowerCase()))
+                    builder.suggest(block);
             }
-            case "Crafted", "Used", "Broken", "Picked_Up", "Dropped" -> {
-                for (var item : ExclusionHelper.getPossibleItems()) {
-                    var id = Registries.ITEM.getId(item).toString();
-                    if (id.toLowerCase().contains(builder.getRemainingLowerCase()))
-                        builder.suggest(id);
-                }
+            case "Broken"-> {
+                for (var item : ExclusionHelper.getBreakableItems(builder.getRemainingLowerCase()))
+                    builder.suggest(item);
+            }
+            case "Crafted"-> {
+                for (var item : ExclusionHelper.getPossibleItems(builder.getRemainingLowerCase()))
+                    builder.suggest(item);
+            }
+            case "Used", "Picked_Up", "Dropped" -> {
+                for (var item : ExclusionHelper.getPossibleItems(builder.getRemainingLowerCase()))
+                    builder.suggest(item);
             }
             case "Killed" -> {
-                for (var entity : ExclusionHelper.getPossibleToKillEntities()) {
-                    var id = Registries.ENTITY_TYPE.getId(entity).toString();
-                    if (id.toLowerCase().contains(builder.getRemainingLowerCase()))
-                        builder.suggest(id);
-                }
+                for (var entity : ExclusionHelper.getPossibleToKillEntities(builder.getRemainingLowerCase()))
+                    builder.suggest(entity);
             }
             case "Killed_By" -> {
-                for (var entity : ExclusionHelper.getPossibleToBeKillByEntities()) {
-                    var id = Registries.ENTITY_TYPE.getId(entity).toString();
-                    if (id.toLowerCase().contains(builder.getRemainingLowerCase()))
-                        builder.suggest(id);
-                }
+                for (var entity : ExclusionHelper.getPossibleToBeKillByEntities(builder.getRemainingLowerCase()))
+                    builder.suggest(entity);
             }
         }
         return builder.buildFuture();
