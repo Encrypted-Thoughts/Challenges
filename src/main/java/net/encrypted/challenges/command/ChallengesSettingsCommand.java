@@ -24,6 +24,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.stat.Stats;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -193,11 +194,9 @@ public class ChallengesSettingsCommand {
                                     if (randomType == GameType.Inventory) {
                                         Type = GameType.Inventory;
 
-                                        var itemList = new ArrayList<net.minecraft.item.Item>();
-                                        for (var item : Registries.ITEM)
-                                            itemList.add(item);
+                                        var itemList = new ArrayList<>(ExclusionHelper.getPossibleItems(""));
                                         Collections.shuffle(itemList);
-                                        Item = itemList.get(0);
+                                        Item = Registries.ITEM.get(new Identifier(itemList.get(0)));
 
                                         MessageHelper.broadcastChat(ctx.getSource().getServer().getPlayerManager(),
                                                 Text.literal("Challenge set to most %s in inventory at end of challenge.".formatted(Item.getName().getString())).formatted(Formatting.WHITE));
@@ -215,7 +214,7 @@ public class ChallengesSettingsCommand {
                                             }
                                             case "Mined" -> statList.addAll(ExclusionHelper.getPossibleBlocks(""));
                                             case "Broken"-> statList.addAll(ExclusionHelper.getBreakableItems(""));
-                                            case "Crafted"-> statList.addAll(ExclusionHelper.getPossibleItems(""));
+                                            case "Crafted"-> statList.addAll(ExclusionHelper.getCraftableItems(""));
                                             case "Used", "Picked_Up", "Dropped" -> statList.addAll(ExclusionHelper.getPossibleItems(""));
                                             case "Killed" -> statList.addAll(ExclusionHelper.getPossibleToKillEntities(""));
                                             case "Killed_By" -> statList.addAll(ExclusionHelper.getPossibleToBeKillByEntities(""));
@@ -343,7 +342,7 @@ public class ChallengesSettingsCommand {
                     builder.suggest(item);
             }
             case "Crafted"-> {
-                for (var item : ExclusionHelper.getPossibleItems(builder.getRemainingLowerCase()))
+                for (var item : ExclusionHelper.getCraftableItems(builder.getRemainingLowerCase()))
                     builder.suggest(item);
             }
             case "Used", "Picked_Up", "Dropped" -> {
