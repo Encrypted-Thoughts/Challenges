@@ -287,7 +287,7 @@ public class ChallengesManager {
 			MessageHelper.broadcastChat(Server.getPlayerManager(), text);
 
 			for(var player : winners) {
-				text = Text.literal("%s".formatted(player.getDisplayName())).formatted(Formatting.WHITE);
+				text = Text.literal("%s".formatted(player.getDisplayName().getString())).formatted(Formatting.WHITE);
 				MessageHelper.broadcastChat(Server.getPlayerManager(), text);
 			}
 		}

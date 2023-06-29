@@ -14,6 +14,7 @@ import net.encrypted.challenges.game.GameStatus;
 import net.encrypted.challenges.game.GameType;
 import net.encrypted.challenges.game.StartingItem;
 import net.encrypted.challenges.game.StatusEffect;
+import net.encrypted.challenges.util.ExclusionHelper;
 import net.encrypted.challenges.util.MessageHelper;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.*;
@@ -27,6 +28,7 @@ import net.minecraft.util.Formatting;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static net.encrypted.challenges.ChallengesManager.*;
@@ -308,15 +310,23 @@ public class ChallengesSettingsCommand {
     }
 
     private static CompletableFuture<Suggestions> GetStatTypes(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) {
-        builder.suggest("Miscellaneous");
-        builder.suggest("Mined");
-        builder.suggest("Crafted");
-        builder.suggest("Used");
-        builder.suggest("Broken");
-        builder.suggest("Picked_Up");
-        builder.suggest("Dropped");
-        builder.suggest("Killed");
-        builder.suggest("Killed_By");
+        var options = new ArrayList<>(List.of(
+            "Miscellaneous",
+            "Mined",
+            "Crafted",
+            "Used",
+            "Broken",
+            "Picked_Up",
+            "Dropped",
+            "Killed",
+            "Killed_By"
+        ));
+
+        for (var option : options){
+            if (option.toLowerCase().contains(builder.getRemainingLowerCase())) {
+                builder.suggest(option);
+            }
+        }
         return builder.buildFuture();
     }
 
@@ -324,20 +334,39 @@ public class ChallengesSettingsCommand {
         var statTypeName = StringArgumentType.getString(context, "statType");
         switch (statTypeName) {
             case "Miscellaneous" -> {
-                for (var stat : Stats.CUSTOM)
-                    builder.suggest(stat.getValue().toString());
+                for (var stat : Stats.CUSTOM) {
+                    var id = stat.getValue().toString();
+                    if (id.toLowerCase().contains(builder.getRemainingLowerCase()))
+                        builder.suggest(id);
+                }
             }
             case "Mined" -> {
-                for (var block : Registries.BLOCK)
-                    builder.suggest(Registries.BLOCK.getId(block).toString());
+                for (var block : ExclusionHelper.getPossibleBlocks()) {
+                    var id = Registries.BLOCK.getId(block).toString();
+                    if (id.toLowerCase().contains(builder.getRemainingLowerCase()))
+                        builder.suggest(id);
+                }
             }
             case "Crafted", "Used", "Broken", "Picked_Up", "Dropped" -> {
-                for (var item : Registries.ITEM)
-                    builder.suggest(Registries.ITEM.getId(item).toString());
+                for (var item : ExclusionHelper.getPossibleItems()) {
+                    var id = Registries.ITEM.getId(item).toString();
+                    if (id.toLowerCase().contains(builder.getRemainingLowerCase()))
+                        builder.suggest(id);
+                }
             }
-            case "Killed", "Killed_By" -> {
-                for (var entity : Registries.ENTITY_TYPE)
-                    builder.suggest(Registries.ENTITY_TYPE.getId(entity).toString());
+            case "Killed" -> {
+                for (var entity : ExclusionHelper.getPossibleToKillEntities()) {
+                    var id = Registries.ENTITY_TYPE.getId(entity).toString();
+                    if (id.toLowerCase().contains(builder.getRemainingLowerCase()))
+                        builder.suggest(id);
+                }
+            }
+            case "Killed_By" -> {
+                for (var entity : ExclusionHelper.getPossibleToBeKillByEntities()) {
+                    var id = Registries.ENTITY_TYPE.getId(entity).toString();
+                    if (id.toLowerCase().contains(builder.getRemainingLowerCase()))
+                        builder.suggest(id);
+                }
             }
         }
         return builder.buildFuture();
