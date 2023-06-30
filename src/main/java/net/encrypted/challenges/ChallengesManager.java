@@ -1,8 +1,8 @@
 package net.encrypted.challenges;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.encrypted.challenges.game.ChallengeCategory;
 import net.encrypted.challenges.game.GameStatus;
-import net.encrypted.challenges.game.GameType;
 import net.encrypted.challenges.game.StartingItem;
 import net.encrypted.challenges.game.StatusEffect;
 import net.encrypted.challenges.util.MessageHelper;
@@ -13,7 +13,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
@@ -50,10 +49,8 @@ public class ChallengesManager {
 	public static int TimeLimit = 20;
 	public static int TPRandomizationRadius = 2000;
 
-	public static GameType Type = GameType.Inventory;
-	public static Item Item;
-	public static String Statistic;
-	public static String StatisticType;
+	public static String Challenge;
+	public static ChallengeCategory Category;
 
 	public static ArrayList<StatusEffect> Effects = new ArrayList<>(List.of(
 		new StatusEffect("minecraft:slow_falling", 20, 6, true),
@@ -72,56 +69,58 @@ public class ChallengesManager {
 
 	public static void start(ServerPlayerEntity starter) {
 		Server = starter.getServer();
+		if (Server == null) return;
+
 		if (Status != GameStatus.Idle) {
 			MessageHelper.sendSystemMessage(starter, Text.literal("Challenge already in progress.").formatted(Formatting.RED));
 			return;
 		}
 
-		if (Type == GameType.Statistic) {
+		if (Category != ChallengeCategory.Inventory) {
 			for (var player : Server.getPlayerManager().getPlayerList())
 			{
-				var id = new Identifier(Statistic);
-				switch (StatisticType) {
-					case "Miscellaneous" -> {
+				var id = new Identifier(Challenge);
+				switch (Category) {
+					case Miscellaneous -> {
 						if (Stats.CUSTOM.hasStat(id))
 							player.resetStat(Stats.CUSTOM.getOrCreateStat(id));
 					}
-					case "Mined" -> {
+					case Mined -> {
 						var block = Block.getBlockFromItem(Registries.ITEM.get(id));
 						if (Stats.MINED.hasStat(block))
 							player.resetStat(Stats.MINED.getOrCreateStat(block));
 					}
-					case "Crafted" -> {
+					case Crafted -> {
 						var item = Registries.ITEM.get(id);
 						if (Stats.CRAFTED.hasStat(item))
 							player.resetStat(Stats.CRAFTED.getOrCreateStat(item));
 					}
-					case "Used" -> {
+					case Used -> {
 						var item = Registries.ITEM.get(id);
 						if (Stats.USED.hasStat(item))
 							player.resetStat(Stats.USED.getOrCreateStat(item));
 					}
-					case "Broken" -> {
+					case Broken -> {
 						var item = Registries.ITEM.get(id);
 						if (Stats.BROKEN.hasStat(item))
 							player.resetStat(Stats.BROKEN.getOrCreateStat(item));
 					}
-					case "Picked_Up" -> {
+					case Picked_Up -> {
 						var item = Registries.ITEM.get(id);
 						if (Stats.PICKED_UP.hasStat(item))
 							player.resetStat(Stats.PICKED_UP.getOrCreateStat(item));
 					}
-					case "Dropped" -> {
+					case Dropped -> {
 						var item = Registries.ITEM.get(id);
 						if (Stats.DROPPED.hasStat(item))
 							player.resetStat(Stats.DROPPED.getOrCreateStat(item));
 					}
-					case "Killed" -> {
+					case Killed -> {
 						var entity = Registries.ENTITY_TYPE.get(id);
 						if (Stats.KILLED.hasStat(entity))
 							player.resetStat(Stats.KILLED.getOrCreateStat(entity));
 					}
-					case "Killed_By" -> {
+					case Killed_By -> {
 						var entity = Registries.ENTITY_TYPE.get(id);
 						if (Stats.KILLED_BY.hasStat(entity))
 							player.resetStat(Stats.KILLED_BY.getOrCreateStat(entity));
@@ -240,19 +239,16 @@ public class ChallengesManager {
 		for (var player : Server.getPlayerManager().getPlayerList()) {
 			player.playSound(SoundEvents.BLOCK_BELL_RESONATE, SoundCategory.MASTER, 0.5f, 1);
 			var statHandler = player.getStatHandler();
-			int score = switch (Type) {
-				case Statistic -> switch (StatisticType) {
-					case "Miscellaneous" -> statHandler.getStat(Stats.CUSTOM, new Identifier(Statistic));
-					case "Mined" -> statHandler.getStat(Stats.MINED, Block.getBlockFromItem(Registries.ITEM.get(new Identifier(Statistic))));
-					case "Crafted" -> statHandler.getStat(Stats.CRAFTED, Registries.ITEM.get(new Identifier(Statistic)));
-					case "Used" -> statHandler.getStat(Stats.USED, Registries.ITEM.get(new Identifier(Statistic)));
-					case "Broken" -> statHandler.getStat(Stats.BROKEN, Registries.ITEM.get(new Identifier(Statistic)));
-					case "Picked_Up" -> statHandler.getStat(Stats.PICKED_UP, Registries.ITEM.get(new Identifier(Statistic)));
-					case "Dropped" -> statHandler.getStat(Stats.DROPPED, Registries.ITEM.get(new Identifier(Statistic)));
-					case "Killed" -> statHandler.getStat(Stats.KILLED, Registries.ENTITY_TYPE.get(new Identifier(Statistic)));
-					case "Killed_By" -> statHandler.getStat(Stats.KILLED_BY, Registries.ENTITY_TYPE.get(new Identifier(Statistic)));
-					default -> 0;
-				};
+			int score = switch (Category) {
+				case Miscellaneous -> statHandler.getStat(Stats.CUSTOM, new Identifier(Challenge));
+				case Mined -> statHandler.getStat(Stats.MINED, Block.getBlockFromItem(Registries.ITEM.get(new Identifier(Challenge))));
+				case Crafted -> statHandler.getStat(Stats.CRAFTED, Registries.ITEM.get(new Identifier(Challenge)));
+				case Used -> statHandler.getStat(Stats.USED, Registries.ITEM.get(new Identifier(Challenge)));
+				case Broken -> statHandler.getStat(Stats.BROKEN, Registries.ITEM.get(new Identifier(Challenge)));
+				case Picked_Up -> statHandler.getStat(Stats.PICKED_UP, Registries.ITEM.get(new Identifier(Challenge)));
+				case Dropped -> statHandler.getStat(Stats.DROPPED, Registries.ITEM.get(new Identifier(Challenge)));
+				case Killed -> statHandler.getStat(Stats.KILLED, Registries.ENTITY_TYPE.get(new Identifier(Challenge)));
+				case Killed_By -> statHandler.getStat(Stats.KILLED_BY, Registries.ENTITY_TYPE.get(new Identifier(Challenge)));
 				case Inventory -> {
 					var total = 0;
 					var inventory = player.getInventory();
@@ -261,8 +257,9 @@ public class ChallengesManager {
 					combinedInventory.addAll(inventory.offHand);
 					combinedInventory.add(player.currentScreenHandler.getCursorStack());
 
+					var challengeItem = Registries.ITEM.get(new Identifier(Challenge));
 					for (var item : combinedInventory) {
-						if (item.getItem() == Item)
+						if (item.getItem() == challengeItem)
 							total += item.getCount();
 					}
 					yield total;

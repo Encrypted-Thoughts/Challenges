@@ -10,21 +10,20 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.encrypted.challenges.ChallengesManager;
 import net.encrypted.challenges.ChallengesMod;
+import net.encrypted.challenges.game.ChallengeCategory;
 import net.encrypted.challenges.game.GameStatus;
-import net.encrypted.challenges.game.GameType;
 import net.encrypted.challenges.game.StartingItem;
 import net.encrypted.challenges.game.StatusEffect;
 import net.encrypted.challenges.util.ExclusionHelper;
 import net.encrypted.challenges.util.MessageHelper;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.*;
-import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.stat.Stats;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.GameRules;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +40,28 @@ public class ChallengesSettingsCommand {
         dispatcher.register(
                 literal(ChallengesCommands.challengesCommand)
                     .then(literal("settings")
+
+                            .executes( ctx -> {
+                                var player = ctx.getSource().getPlayer();
+                                if(player == null) return 0;
+
+                                var text = Text.literal("Current Settings:").formatted(Formatting.GOLD);
+                                MessageHelper.sendSystemMessage(player, text);
+                                text = Text.literal("Challenge: ").formatted(Formatting.GREEN).append(Text.literal("%s - %s".formatted(Challenge, Category)).formatted(Formatting.WHITE));
+                                MessageHelper.sendSystemMessage(player, text);
+                                text = Text.literal("Time Limit: ").formatted(Formatting.GREEN).append(Text.literal(TimeLimit > 0 ? TimeLimit + " Minutes" : "None").formatted(Formatting.WHITE));
+                                MessageHelper.sendSystemMessage(player, text);
+
+                                var server = player.getServer();
+                                if (server != null) {
+                                    text = Text.literal("PVP: ").formatted(Formatting.GREEN).append(Text.literal(server.isPvpEnabled() ? "YES" : "NO").formatted(Formatting.WHITE));
+                                    MessageHelper.sendSystemMessage(player, text);
+
+                                    text = Text.literal("Keep Inventory: ").formatted(Formatting.GREEN).append(Text.literal(server.getGameRules().get(GameRules.KEEP_INVENTORY).get() ? "YES" : "NO").formatted(Formatting.WHITE));
+                                    MessageHelper.sendSystemMessage(player, text);
+                                }
+                                return Command.SINGLE_SUCCESS;
+                            })
 
                             // Set the equipment settings
                             .then(literal("equipment")
@@ -184,74 +205,52 @@ public class ChallengesSettingsCommand {
                                             })))
 
                         // Set challenge statistic
-                        .then(literal("type")
+                        .then(literal("category")
                             .then (literal("random")
                                 .executes(ctx -> {
-                                    var typeList = Arrays.asList(GameType.values());
-                                    Collections.shuffle(typeList);
-                                    var randomType = typeList.get(0);
+                                    var categories = Arrays.asList(ChallengeCategory.values());
+                                    Collections.shuffle(categories);
+                                    Category = categories.get(0);
 
-                                    if (randomType == GameType.Inventory) {
-                                        Type = GameType.Inventory;
-
-                                        var itemList = new ArrayList<>(ExclusionHelper.getPossibleItems(""));
-                                        Collections.shuffle(itemList);
-                                        Item = Registries.ITEM.get(new Identifier(itemList.get(0)));
-
-                                        MessageHelper.broadcastChat(ctx.getSource().getServer().getPlayerManager(),
-                                                Text.literal("Challenge set to most %s in inventory at end of challenge.".formatted(Item.getName().getString())).formatted(Formatting.WHITE));
-                                    } else {
-                                        Type = GameType.Statistic;
-
-                                        var statTypeList = Arrays.asList("Miscellaneous", "Mined", "Crafted", "Used", "Broken", "Picked_Up", "Dropped", "Killed", "Killed_By");
-                                        Collections.shuffle(statTypeList);
-                                        StatisticType = statTypeList.get(0);
-                                        var statList = new ArrayList<String>();
-                                        switch (StatisticType) {
-                                            case "Miscellaneous" -> {
-                                                for (var stat : Stats.CUSTOM)
-                                                    statList.add(stat.getValue().toString());
-                                            }
-                                            case "Mined" -> statList.addAll(ExclusionHelper.getPossibleBlocks(""));
-                                            case "Broken"-> statList.addAll(ExclusionHelper.getBreakableItems(""));
-                                            case "Crafted"-> statList.addAll(ExclusionHelper.getCraftableItems(""));
-                                            case "Used", "Picked_Up", "Dropped" -> statList.addAll(ExclusionHelper.getPossibleItems(""));
-                                            case "Killed" -> statList.addAll(ExclusionHelper.getPossibleToKillEntities(""));
-                                            case "Killed_By" -> statList.addAll(ExclusionHelper.getPossibleToBeKillByEntities(""));
+                                    var challenges = new ArrayList<String>();
+                                    switch (Category) {
+                                        case Miscellaneous -> {
+                                            for (var stat : Stats.CUSTOM)
+                                                challenges.add(stat.getValue().toString());
                                         }
-
-                                        Collections.shuffle(statList);
-                                        Statistic = statList.get(0);
-
-                                        MessageHelper.broadcastChat(ctx.getSource().getServer().getPlayerManager(),
-                                                Text.literal("Challenge set to: %s - %s".formatted(Statistic , StatisticType)).formatted(Formatting.WHITE));
+                                        case Mined -> challenges.addAll(ExclusionHelper.getPossibleBlocks(""));
+                                        case Broken-> challenges.addAll(ExclusionHelper.getBreakableItems(""));
+                                        case Crafted-> challenges.addAll(ExclusionHelper.getCraftableItems(""));
+                                        case Used, Picked_Up, Dropped, Inventory -> challenges.addAll(ExclusionHelper.getPossibleItems(""));
+                                        case Killed -> challenges.addAll(ExclusionHelper.getPossibleToKillEntities(""));
+                                        case Killed_By -> challenges.addAll(ExclusionHelper.getPossibleToBeKillByEntities(""));
                                     }
+
+                                    Collections.shuffle(challenges);
+                                    Challenge = challenges.get(0);
+
+                                    MessageHelper.broadcastChat(ctx.getSource().getServer().getPlayerManager(),
+                                            Text.literal("Challenge set to: %s - %s".formatted(Challenge, Category)).formatted(Formatting.WHITE));
+
                                     return Command.SINGLE_SUCCESS;
                                 }))
 
-                            .then (literal("statistic")
-                                .then(argument("statType", StringArgumentType.word())
-                                    .suggests(ChallengesSettingsCommand::GetStatTypes)
-                                    .then(argument("stat", StringArgumentType.greedyString())
-                                            .suggests(ChallengesSettingsCommand::GetAvailableStats)
-                                            .executes(ctx -> {
-                                                Type = GameType.Statistic;
-                                                Statistic = StringArgumentType.getString(ctx, "stat");
-                                                StatisticType = StringArgumentType.getString(ctx, "statType");
-                                                MessageHelper.broadcastChat(ctx.getSource().getServer().getPlayerManager(),
-                                                        Text.literal("Challenge set to: %s - %s".formatted(StatisticType, Statistic)).formatted(Formatting.WHITE));
-                                                return Command.SINGLE_SUCCESS;
-                                            }))))
-
-                            .then(literal("inventory")
-                                    .then(argument("item", ItemStackArgumentType.itemStack(registryAccess))
-                                            .executes(ctx -> {
-                                                Type = GameType.Inventory;
-                                                Item = ItemStackArgumentType.getItemStackArgument(ctx, "item").getItem();
-                                                MessageHelper.broadcastChat(ctx.getSource().getServer().getPlayerManager(),
-                                                        Text.literal("Challenge set to most %s in inventory at end of challenge.".formatted(Item.getName().getString())).formatted(Formatting.WHITE));
-                                                return Command.SINGLE_SUCCESS;
-                                            }))))
+                            .then(argument("category", StringArgumentType.word())
+                                .suggests(ChallengesSettingsCommand::GetCategories)
+                                .then(argument("challenge", StringArgumentType.greedyString())
+                                        .suggests(ChallengesSettingsCommand::GetAvailableStats)
+                                        .executes(ctx -> {
+                                            var selectedCategory = StringArgumentType.getString(ctx, "category").toLowerCase();
+                                            for (var category : ChallengeCategory.values()) {
+                                                if (category.toString().toLowerCase().equals(selectedCategory)) {
+                                                    Category = category;
+                                                    Challenge = StringArgumentType.getString(ctx, "challenge");
+                                                    MessageHelper.broadcastChat(ctx.getSource().getServer().getPlayerManager(),
+                                                            Text.literal("Challenge set to: %s - %s".formatted(Category, Challenge)).formatted(Formatting.WHITE));
+                                                }
+                                            }
+                                            return Command.SINGLE_SUCCESS;
+                                        }))))
 
                         // Set profile dimension
                         .then(literal("dimension")
@@ -302,60 +301,54 @@ public class ChallengesSettingsCommand {
                                         })))));
     }
 
-    private static CompletableFuture<Suggestions> GetStatTypes(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) {
-        var options = new ArrayList<>(List.of(
-            "Miscellaneous",
-            "Mined",
-            "Crafted",
-            "Used",
-            "Broken",
-            "Picked_Up",
-            "Dropped",
-            "Killed",
-            "Killed_By"
-        ));
+    private static CompletableFuture<Suggestions> GetCategories(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) {
+        var options = List.of(ChallengeCategory.values());
 
         for (var option : options){
-            if (option.toLowerCase().contains(builder.getRemainingLowerCase())) {
-                builder.suggest(option);
+            if (option.toString().toLowerCase().contains(builder.getRemainingLowerCase())) {
+                builder.suggest(option.toString());
             }
         }
         return builder.buildFuture();
     }
 
     private static CompletableFuture<Suggestions> GetAvailableStats(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) {
-        var statTypeName = StringArgumentType.getString(context, "statType");
-        switch (statTypeName) {
-            case "Miscellaneous" -> {
-                for (var stat : Stats.CUSTOM) {
-                    var id = stat.getValue().toString();
-                    if (id.toLowerCase().contains(builder.getRemainingLowerCase()))
-                        builder.suggest(id);
+        var selectedCategory = StringArgumentType.getString(context, "category").toLowerCase();
+        for (var category : ChallengeCategory.values()) {
+            if (category.toString().toLowerCase().equals(selectedCategory)) {
+                switch (category) {
+                    case Miscellaneous -> {
+                        for (var stat : Stats.CUSTOM) {
+                            var id = stat.getValue().toString();
+                            if (id.toLowerCase().contains(builder.getRemainingLowerCase()))
+                                builder.suggest(id);
+                        }
+                    }
+                    case Mined -> {
+                        for (var block : ExclusionHelper.getPossibleBlocks(builder.getRemainingLowerCase()))
+                            builder.suggest(block);
+                    }
+                    case Broken-> {
+                        for (var item : ExclusionHelper.getBreakableItems(builder.getRemainingLowerCase()))
+                            builder.suggest(item);
+                    }
+                    case Crafted-> {
+                        for (var item : ExclusionHelper.getCraftableItems(builder.getRemainingLowerCase()))
+                            builder.suggest(item);
+                    }
+                    case Used, Picked_Up, Dropped, Inventory -> {
+                        for (var item : ExclusionHelper.getPossibleItems(builder.getRemainingLowerCase()))
+                            builder.suggest(item);
+                    }
+                    case Killed -> {
+                        for (var entity : ExclusionHelper.getPossibleToKillEntities(builder.getRemainingLowerCase()))
+                            builder.suggest(entity);
+                    }
+                    case Killed_By -> {
+                        for (var entity : ExclusionHelper.getPossibleToBeKillByEntities(builder.getRemainingLowerCase()))
+                            builder.suggest(entity);
+                    }
                 }
-            }
-            case "Mined" -> {
-                for (var block : ExclusionHelper.getPossibleBlocks(builder.getRemainingLowerCase()))
-                    builder.suggest(block);
-            }
-            case "Broken"-> {
-                for (var item : ExclusionHelper.getBreakableItems(builder.getRemainingLowerCase()))
-                    builder.suggest(item);
-            }
-            case "Crafted"-> {
-                for (var item : ExclusionHelper.getCraftableItems(builder.getRemainingLowerCase()))
-                    builder.suggest(item);
-            }
-            case "Used", "Picked_Up", "Dropped" -> {
-                for (var item : ExclusionHelper.getPossibleItems(builder.getRemainingLowerCase()))
-                    builder.suggest(item);
-            }
-            case "Killed" -> {
-                for (var entity : ExclusionHelper.getPossibleToKillEntities(builder.getRemainingLowerCase()))
-                    builder.suggest(entity);
-            }
-            case "Killed_By" -> {
-                for (var entity : ExclusionHelper.getPossibleToBeKillByEntities(builder.getRemainingLowerCase()))
-                    builder.suggest(entity);
             }
         }
         return builder.buildFuture();

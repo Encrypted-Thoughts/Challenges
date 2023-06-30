@@ -9,13 +9,18 @@ View current challenge settings.
 
 ***
 
-### `/challenges settings type [type] [category?] [stat]`
+### `/challenges settings category [category] [challenge]`
 
-- type: `string` Specify the type of game from the two available options: inventory, statistic, random
-- category: `string` If Statistic type is selected also select one of the 9 statistic categories: Miscellaneous, Mined, Broken, Crafted, Used, Picked_Up, Dropped, Killed, Killed_By
-- stat: `string` Choose the item, block, or entity for the challenge corresponding to the selected category.
+- category: `string` Select one of the 10 categories: Miscellaneous, Inventory, Mined, Broken, Crafted, Used, Picked_Up, Dropped, Killed, Killed_By
+- challenge: `string` Choose the item, block, or entity for the challenge corresponding to the selected category.
 
 Set the challenge type to play.
+
+***
+
+### `/challenges settings category random`
+
+Picks a random possible challenge from the various categories.
 
 ***
 
