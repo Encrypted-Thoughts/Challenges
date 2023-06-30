@@ -719,7 +719,11 @@ public class ExclusionHelper {
             Items.WARPED_STEM,
             Items.STRIPPED_WARPED_STEM,
             Items.WHEAT,
-            Items.WRITTEN_BOOK
+            Items.WRITTEN_BOOK,
+            Items.AMETHYST_CLUSTER,
+            Items.SMALL_AMETHYST_BUD,
+            Items.MEDIUM_AMETHYST_BUD,
+            Items.LARGE_AMETHYST_BUD
     ));
 
     public static ArrayList<String> getPossibleItems(String filter) {
