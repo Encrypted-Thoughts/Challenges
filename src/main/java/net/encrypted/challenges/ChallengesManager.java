@@ -288,7 +288,7 @@ public class ChallengesManager {
 				MessageHelper.broadcastChat(Server.getPlayerManager(), text);
 			}
 		}
-		else if (winners.size() > 0) {
+		else if (!winners.isEmpty()) {
 			text = Text.literal("With a winning score of %s. %s has won the game!".formatted(winningScore, winners.get(0).getDisplayName().getString())).formatted(Formatting.GOLD);
 			MessageHelper.broadcastChat(Server.getPlayerManager(), text);
 		}
