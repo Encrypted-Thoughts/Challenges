@@ -28,6 +28,7 @@ public class ExclusionHelper {
             Items.REINFORCED_DEEPSLATE,
             Items.PLAYER_HEAD,
             Items.AIR,
+            Items.TRIAL_SPAWNER,
 
             Items.COMMAND_BLOCK,
             Items.CHAIN_COMMAND_BLOCK,
@@ -118,7 +119,8 @@ public class ExclusionHelper {
             Items.ZOMBIE_SPAWN_EGG,
             Items.ZOMBIE_HORSE_SPAWN_EGG,
             Items.ZOMBIE_VILLAGER_SPAWN_EGG,
-            Items.ZOMBIFIED_PIGLIN_SPAWN_EGG
+            Items.ZOMBIFIED_PIGLIN_SPAWN_EGG,
+            Items.BREEZE_SPAWN_EGG
     ));
 
     public static ArrayList<EntityType<?>> ImpossibleToKillEntities = new ArrayList<>(List.of(
@@ -391,7 +393,7 @@ public class ExclusionHelper {
             Items.END_STONE,
             Items.GILDED_BLACKSTONE,
             Items.BLACKSTONE,
-            Items.GRASS,
+            Items.SHORT_GRASS,
             Items.GRASS_BLOCK,
             Items.TALL_GRASS,
             Items.GRAVEL,
