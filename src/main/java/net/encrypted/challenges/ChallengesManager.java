@@ -10,13 +10,13 @@ import net.encrypted.challenges.util.PlayerHelper;
 import net.encrypted.challenges.util.TeleportHelper;
 import net.encrypted.challenges.util.WorldHelper;
 import net.minecraft.block.Block;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -80,7 +80,7 @@ public class ChallengesManager {
 		if (Category != ChallengeCategory.Inventory) {
 			for (var player : Server.getPlayerManager().getPlayerList())
 			{
-				var id = new Identifier(Challenge);
+				var id = Identifier.of(Challenge);
 				switch (Category) {
 					case Miscellaneous -> {
 						if (Stats.CUSTOM.hasStat(id))
@@ -242,15 +242,15 @@ public class ChallengesManager {
 			player.playSoundToPlayer(SoundEvents.BLOCK_BELL_RESONATE, SoundCategory.MASTER, 0.5f, 1);
 			var statHandler = player.getStatHandler();
 			int score = switch (Category) {
-				case Miscellaneous -> statHandler.getStat(Stats.CUSTOM, new Identifier(Challenge));
-				case Mined -> statHandler.getStat(Stats.MINED, Block.getBlockFromItem(Registries.ITEM.get(new Identifier(Challenge))));
-				case Crafted -> statHandler.getStat(Stats.CRAFTED, Registries.ITEM.get(new Identifier(Challenge)));
-				case Used -> statHandler.getStat(Stats.USED, Registries.ITEM.get(new Identifier(Challenge)));
-				case Broken -> statHandler.getStat(Stats.BROKEN, Registries.ITEM.get(new Identifier(Challenge)));
-				case Picked_Up -> statHandler.getStat(Stats.PICKED_UP, Registries.ITEM.get(new Identifier(Challenge)));
-				case Dropped -> statHandler.getStat(Stats.DROPPED, Registries.ITEM.get(new Identifier(Challenge)));
-				case Killed -> statHandler.getStat(Stats.KILLED, Registries.ENTITY_TYPE.get(new Identifier(Challenge)));
-				case Killed_By -> statHandler.getStat(Stats.KILLED_BY, Registries.ENTITY_TYPE.get(new Identifier(Challenge)));
+				case Miscellaneous -> statHandler.getStat(Stats.CUSTOM, Identifier.of(Challenge));
+				case Mined -> statHandler.getStat(Stats.MINED, Block.getBlockFromItem(Registries.ITEM.get(Identifier.of(Challenge))));
+				case Crafted -> statHandler.getStat(Stats.CRAFTED, Registries.ITEM.get(Identifier.of(Challenge)));
+				case Used -> statHandler.getStat(Stats.USED, Registries.ITEM.get(Identifier.of(Challenge)));
+				case Broken -> statHandler.getStat(Stats.BROKEN, Registries.ITEM.get(Identifier.of(Challenge)));
+				case Picked_Up -> statHandler.getStat(Stats.PICKED_UP, Registries.ITEM.get(Identifier.of(Challenge)));
+				case Dropped -> statHandler.getStat(Stats.DROPPED, Registries.ITEM.get(Identifier.of(Challenge)));
+				case Killed -> statHandler.getStat(Stats.KILLED, Registries.ENTITY_TYPE.get(Identifier.of(Challenge)));
+				case Killed_By -> statHandler.getStat(Stats.KILLED_BY, Registries.ENTITY_TYPE.get(Identifier.of(Challenge)));
 				case Inventory -> {
 					var total = 0;
 					var inventory = player.getInventory();
@@ -259,7 +259,7 @@ public class ChallengesManager {
 					combinedInventory.addAll(inventory.offHand);
 					combinedInventory.add(player.currentScreenHandler.getCursorStack());
 
-					var challengeItem = Registries.ITEM.get(new Identifier(Challenge));
+					var challengeItem = Registries.ITEM.get(Identifier.of(Challenge));
 					for (var item : combinedInventory) {
 						if (item.getItem() == challengeItem)
 							total += item.getCount();
@@ -417,15 +417,20 @@ public class ChallengesManager {
 		for (var gear : StartingGear) {
 			if (!gear.OnRespawn && respawn) continue;
 
-			var item = Registries.ITEM.get(new Identifier(gear.Name));
+			var item = Registries.ITEM.get(Identifier.of(gear.Name));
 			var stack = new ItemStack(item, gear.Amount);
 			if (stack.isEnchantable()) {
-				for (var enchantment : gear.Enchantments)
-					stack.addEnchantment(Registries.ENCHANTMENT.get(new Identifier(enchantment.Type)), enchantment.Level);
+				var server = player.getServer();
+				if (server != null) {
+					for (var enchantment : gear.Enchantments) {
+						var entry = server.getRegistryManager().get(RegistryKeys.ENCHANTMENT).getEntry(Identifier.of(enchantment.Type));
+						entry.ifPresent(enchantmentReference -> stack.addEnchantment(enchantmentReference, enchantment.Level));
+					}
+				}
 			}
 
 			if (gear.AutoEquip) {
-				var slot = LivingEntity.getPreferredEquipmentSlot(stack);
+				var slot = player.getPreferredEquipmentSlot(stack);
 				player.equipStack(slot, stack);
 			} else {
 				player.giveItemStack(stack);
@@ -438,7 +443,7 @@ public class ChallengesManager {
 
 		for (var entry : Effects) {
 			if (!entry.OnRespawn && respawn) continue;
-			var effect = Registries.STATUS_EFFECT.getEntry(new Identifier(entry.Type));
+			var effect = Registries.STATUS_EFFECT.getEntry(Identifier.of(entry.Type));
             effect.ifPresent(statusEffectReference ->
 					player.addStatusEffect(new StatusEffectInstance(statusEffectReference, entry.Duration < 0 ? -1 : entry.Duration * 20, entry.Amplifier, entry.Ambient, entry.ShowParticles, entry.ShowIcon))
 			);
