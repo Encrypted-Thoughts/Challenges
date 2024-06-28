@@ -6,6 +6,7 @@ import net.encrypted.challenges.game.GameStatus;
 import net.encrypted.challenges.game.StartingItem;
 import net.encrypted.challenges.game.StatusEffect;
 import net.encrypted.challenges.util.MessageHelper;
+import net.encrypted.challenges.util.PlayerHelper;
 import net.encrypted.challenges.util.TeleportHelper;
 import net.encrypted.challenges.util.WorldHelper;
 import net.minecraft.block.Block;
@@ -167,7 +168,7 @@ public class ChallengesManager {
 			Status = GameStatus.Initializing;
 		}).exceptionally(ex -> {
 			MessageHelper.broadcastChatToPlayers(Server.getPlayerManager(), Text.literal("Problem finding spawn."));
-			ex.printStackTrace();
+			ChallengesMod.LOGGER.error(ex.getMessage());
 			return null;
 		});
 	}
@@ -237,7 +238,7 @@ public class ChallengesManager {
 		var winners = new ArrayList<ServerPlayerEntity>();
 		int winningScore = 0;
 		for (var player : Server.getPlayerManager().getPlayerList()) {
-			player.playSound(SoundEvents.BLOCK_BELL_RESONATE, SoundCategory.MASTER, 0.5f, 1);
+			player.playSoundToPlayer(SoundEvents.BLOCK_BELL_RESONATE, SoundCategory.MASTER, 0.5f, 1);
 			var statHandler = player.getStatHandler();
 			int score = switch (Category) {
 				case Miscellaneous -> statHandler.getStat(Stats.CUSTOM, new Identifier(Challenge));
@@ -274,7 +275,7 @@ public class ChallengesManager {
 				winners.add(player);
 			}
 
-			text = Text.literal("%s: %s".formatted(player.getDisplayName().getString(), score)).formatted(Formatting.WHITE);
+			text = Text.literal("%s: %s".formatted(PlayerHelper.getPlayerName(player), score)).formatted(Formatting.WHITE);
 			MessageHelper.broadcastChat(Server.getPlayerManager(), text);
 		}
 
@@ -284,12 +285,12 @@ public class ChallengesManager {
 			MessageHelper.broadcastChat(Server.getPlayerManager(), text);
 
 			for(var player : winners) {
-				text = Text.literal("%s".formatted(player.getDisplayName().getString())).formatted(Formatting.WHITE);
+				text = Text.literal("%s".formatted(PlayerHelper.getPlayerName(player))).formatted(Formatting.WHITE);
 				MessageHelper.broadcastChat(Server.getPlayerManager(), text);
 			}
 		}
 		else if (!winners.isEmpty()) {
-			text = Text.literal("With a winning score of %s. %s has won the game!".formatted(winningScore, winners.get(0).getDisplayName().getString())).formatted(Formatting.GOLD);
+			text = Text.literal("With a winning score of %s. %s has won the game!".formatted(winningScore, PlayerHelper.getPlayerName(winners.getFirst()))).formatted(Formatting.GOLD);
 			MessageHelper.broadcastChat(Server.getPlayerManager(), text);
 		}
 
@@ -314,7 +315,7 @@ public class ChallengesManager {
 			player.changeGameMode(GameMode.SURVIVAL);
 			player.setSpawnPoint(player.getWorld().getRegistryKey(), spawn, 0, true, false);
 		} catch (CommandSyntaxException e) {
-			e.printStackTrace();
+			ChallengesMod.LOGGER.error(e.getMessage());
 		}
 	}
 
@@ -339,10 +340,10 @@ public class ChallengesManager {
 				resetPlayer(tpPlayer);
 				player.changeGameMode(GameMode.ADVENTURE);
 			} else
-				ChallengesMod.LOGGER.error("Unable to teleport player: %s to spawn".formatted(player.getDisplayName().getString()));
+				ChallengesMod.LOGGER.error("Unable to teleport player: %s to spawn".formatted(PlayerHelper.getPlayerName(player)));
 		} catch (CommandSyntaxException e) {
-			ChallengesMod.LOGGER.error("Unable to teleport player: %s to spawn".formatted(player.getDisplayName().getString()));
-			e.printStackTrace();
+			ChallengesMod.LOGGER.error("Unable to teleport player: %s to spawn".formatted(PlayerHelper.getPlayerName(player)));
+			ChallengesMod.LOGGER.error(e.getMessage());
 		}
 	}
 
@@ -436,9 +437,10 @@ public class ChallengesManager {
 
 		for (var entry : Effects) {
 			if (!entry.OnRespawn && respawn) continue;
-			var effect = Registries.STATUS_EFFECT.get(new Identifier(entry.Type));
-			if (effect != null)
-				player.addStatusEffect(new StatusEffectInstance(effect, entry.Duration < 0 ? -1 : entry.Duration * 20, entry.Amplifier, entry.Ambient, entry.ShowParticles, entry.ShowIcon));
+			var effect = Registries.STATUS_EFFECT.getEntry(new Identifier(entry.Type));
+            effect.ifPresent(statusEffectReference ->
+					player.addStatusEffect(new StatusEffectInstance(statusEffectReference, entry.Duration < 0 ? -1 : entry.Duration * 20, entry.Amplifier, entry.Ambient, entry.ShowParticles, entry.ShowIcon))
+			);
 		}
 	}
 
@@ -471,7 +473,7 @@ public class ChallengesManager {
 							var world = WorldHelper.getWorldByName(server, Dimension);
 							TeleportHelper.teleport(player, world, spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5, player.getYaw(), player.getPitch());
 						} catch (CommandSyntaxException e) {
-							ChallengesMod.LOGGER.error("Unable to teleport player: %s".formatted(player.getDisplayName().getString()));
+							ChallengesMod.LOGGER.error("Unable to teleport player: %s".formatted(PlayerHelper.getPlayerName(player)));
 						}
 					}
 				}

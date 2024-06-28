@@ -18,6 +18,7 @@ import net.encrypted.challenges.util.ExclusionHelper;
 import net.encrypted.challenges.util.MessageHelper;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.*;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.stat.Stats;
@@ -139,8 +140,8 @@ public class ChallengesSettingsCommand {
                                                             .then(argument("respawn", BoolArgumentType.bool())
                                                                     .then(argument("equip", BoolArgumentType.bool())
                                                                             .executes(ctx -> {
-                                                                                var item = ItemStackArgumentType.getItemStackArgument(ctx, "item");
-                                                                                var itemName = item.asString();
+                                                                                var stack = ItemStackArgumentType.getItemStackArgument(ctx, "item");
+                                                                                var itemName = Registries.ITEM.getId(stack.getItem());
 
                                                                                 var count = IntegerArgumentType.getInteger(ctx, "amount");
                                                                                 var onRespawn = BoolArgumentType.getBool(ctx, "respawn");
@@ -148,18 +149,18 @@ public class ChallengesSettingsCommand {
 
                                                                                 MessageHelper.broadcastChat(ctx.getSource().getServer().getPlayerManager(),
                                                                                         Text.literal("Adding item " + itemName + " | " + count + " | " + onRespawn + " | " + equip + " to equipment.").formatted(Formatting.WHITE));
-                                                                                ChallengesManager.StartingGear.add(new StartingItem(itemName, count, onRespawn, equip));
+                                                                                ChallengesManager.StartingGear.add(new StartingItem(itemName.toString(), count, onRespawn, equip));
 
                                                                                 return Command.SINGLE_SUCCESS;
                                                                             }))))))
                                     .then(literal("remove")
                                             .then(argument("item", ItemStackArgumentType.itemStack(registryAccess))
                                                     .executes(ctx -> {
-                                                        var item = ItemStackArgumentType.getItemStackArgument(ctx, "item");
-                                                        var itemName = item.asString();
+                                                        var stack = ItemStackArgumentType.getItemStackArgument(ctx, "item");
+                                                        var itemName = Registries.ITEM.getId(stack.getItem());
                                                         MessageHelper.broadcastChat(ctx.getSource().getServer().getPlayerManager(),
                                                                 Text.literal("Removing item " + itemName + " from equipment.").formatted(Formatting.WHITE));
-                                                        ChallengesManager.StartingGear.removeIf(gear -> gear.Name.equals(itemName));
+                                                        ChallengesManager.StartingGear.removeIf(gear -> gear.Name.equals(itemName.toString()));
 
                                                         return Command.SINGLE_SUCCESS;
                                                     }))))
@@ -167,10 +168,10 @@ public class ChallengesSettingsCommand {
                             // Set the effects to play with
                             .then(literal("effects")
                                     .then(literal("add")
-                                            .then(argument("effect", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.STATUS_EFFECT))
+                                            .then(argument("effect", RegistryEntryReferenceArgumentType.registryEntry(registryAccess, RegistryKeys.STATUS_EFFECT))
                                                     .then(argument("amplifier", IntegerArgumentType.integer(0, 255))
                                                             .executes(ctx -> {
-                                                                var status = RegistryEntryArgumentType.getStatusEffect(ctx, "effect");
+                                                                var status = RegistryEntryReferenceArgumentType.getStatusEffect(ctx, "effect");
                                                                 var amplifier = IntegerArgumentType.getInteger(ctx, "amplifier");
                                                                 ChallengesManager.Effects.add(new StatusEffect(status.registryKey().getValue().toString(), 99999, amplifier, true));
 
@@ -180,9 +181,9 @@ public class ChallengesSettingsCommand {
                                                             }))))
 
                                     .then(literal("remove")
-                                            .then(argument("effect", RegistryEntryArgumentType.registryEntry(registryAccess, RegistryKeys.STATUS_EFFECT)))
+                                            .then(argument("effect", RegistryEntryReferenceArgumentType.registryEntry(registryAccess, RegistryKeys.STATUS_EFFECT)))
                                             .executes(ctx -> {
-                                                var status = RegistryEntryArgumentType.getStatusEffect(ctx, "effect");
+                                                var status = RegistryEntryReferenceArgumentType.getStatusEffect(ctx, "effect");
                                                 var effect = ChallengesManager.Effects.removeIf(statusEffect -> statusEffect.Type.equals(status.value().getName().toString()));
                                                 if (!effect) {
                                                     var text = Text.literal(status.value().getName().getString() + " isn't in the current list of effects to remove").formatted(Formatting.RED);
@@ -210,7 +211,7 @@ public class ChallengesSettingsCommand {
                                 .executes(ctx -> {
                                     var categories = Arrays.asList(ChallengeCategory.values());
                                     Collections.shuffle(categories);
-                                    Category = categories.get(0);
+                                    Category = categories.getFirst();
 
                                     var challenges = new ArrayList<String>();
                                     switch (Category) {
@@ -227,7 +228,7 @@ public class ChallengesSettingsCommand {
                                     }
 
                                     Collections.shuffle(challenges);
-                                    Challenge = challenges.get(0);
+                                    Challenge = challenges.getFirst();
 
                                     MessageHelper.broadcastChat(ctx.getSource().getServer().getPlayerManager(),
                                             Text.literal("Challenge set to: %s - %s".formatted(Challenge, Category)).formatted(Formatting.WHITE));
