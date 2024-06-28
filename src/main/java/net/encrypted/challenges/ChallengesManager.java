@@ -191,6 +191,7 @@ public class ChallengesManager {
 			if (elapsedSeconds >= 30) {
 				for (var player : Server.getPlayerManager().getPlayerList()) {
 					player.setMovementSpeed(1);
+					player.setNoGravity(false);
 					givePlayerEquipment(player, false);
 					givePlayerStatusEffects(player, false);
 				}
@@ -301,8 +302,7 @@ public class ChallengesManager {
 	public static void teleportPlayersToChallengeSpawn(ServerWorld world, BlockPos spawn) {
 		for (var player : Server.getPlayerManager().getPlayerList()) {
 			player.addStatusEffect(new StatusEffectInstance(StatusEffects.INVISIBILITY, 300 * 20, 255, false, false, false));
-			player.addStatusEffect(new StatusEffectInstance(StatusEffects.LEVITATION, 300 * 20, 255, false, false, false));
-			player.addStatusEffect(new StatusEffectInstance(StatusEffects.JUMP_BOOST, 300 * 20, 250, false, false, false));
+			player.setNoGravity(true);
 			teleportPlayerToChallengeSpawn(world, player, spawn.offset(Direction.Axis.Y, YSpawnOffset));
 		}
 	}
@@ -391,6 +391,7 @@ public class ChallengesManager {
 	public static void resetPlayer(ServerPlayerEntity player) {
 		player.setMovementSpeed(1);
 		player.setVelocity(0, 0, 0);
+		player.setNoGravity(false);
 		player.clearStatusEffects();
 
 		player.playerScreenHandler.clearCraftingSlots();
