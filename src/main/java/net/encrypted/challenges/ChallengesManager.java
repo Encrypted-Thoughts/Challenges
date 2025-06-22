@@ -254,16 +254,16 @@ public class ChallengesManager {
 				case Inventory -> {
 					var total = 0;
 					var inventory = player.getInventory();
-					var combinedInventory = new ArrayList<>(inventory.main);
-					combinedInventory.addAll(inventory.armor);
-					combinedInventory.addAll(inventory.offHand);
-					combinedInventory.add(player.currentScreenHandler.getCursorStack());
 
 					var challengeItem = Registries.ITEM.get(Identifier.of(Challenge));
-					for (var item : combinedInventory) {
+					for (var item : inventory) {
 						if (item.getItem() == challengeItem)
 							total += item.getCount();
 					}
+					var cursor = player.currentScreenHandler.getCursorStack();
+					if (cursor.getItem() == challengeItem)
+						total += cursor.getCount();
+
 					yield total;
 				}
 			};
@@ -313,7 +313,7 @@ public class ChallengesManager {
 			player.getHungerManager().setFoodLevel(20);
 			TeleportHelper.teleport(player, world, spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5, 0, 0);
 			player.changeGameMode(GameMode.SURVIVAL);
-			player.setSpawnPoint(player.getWorld().getRegistryKey(), spawn, 0, true, false);
+			player.setSpawnPoint(new ServerPlayerEntity.Respawn(player.getWorld().getRegistryKey(), spawn, 0, true),false);
 		} catch (CommandSyntaxException e) {
 			ChallengesMod.LOGGER.error(e.getMessage());
 		}
@@ -403,7 +403,7 @@ public class ChallengesManager {
 		player.heal(player.getMaxHealth());
 		player.getHungerManager().setFoodLevel(20);
 		var world = WorldHelper.getWorldRegistryKeyByName(Server, ChallengesMod.CONFIG.SpawnSettings.Dimension);
-		player.setSpawnPoint(world, ChallengesMod.CONFIG.SpawnSettings.HubCoords.getBlockPos(), 0, true, false);
+		player.setSpawnPoint(new ServerPlayerEntity.Respawn(world, ChallengesMod.CONFIG.SpawnSettings.HubCoords.getBlockPos(), 0, true), false);
 	}
 
 	public static void runAfterRespawn(ServerPlayerEntity player) {
