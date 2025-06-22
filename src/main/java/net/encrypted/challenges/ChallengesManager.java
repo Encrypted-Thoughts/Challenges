@@ -394,7 +394,7 @@ public class ChallengesManager {
 		player.setNoGravity(false);
 		player.clearStatusEffects();
 
-		player.playerScreenHandler.clearCraftingSlots();
+		player.playerScreenHandler.getCraftingInput().clear();
 		player.currentScreenHandler.setCursorStack(new ItemStack(Items.AIR));
 		player.getInventory().clear();
 		player.currentScreenHandler.sendContentUpdates();
@@ -423,7 +423,7 @@ public class ChallengesManager {
 				var server = player.getServer();
 				if (server != null) {
 					for (var enchantment : gear.Enchantments) {
-						var entry = server.getRegistryManager().get(RegistryKeys.ENCHANTMENT).getEntry(Identifier.of(enchantment.Type));
+						var entry = server.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getEntry(Identifier.of(enchantment.Type));
 						entry.ifPresent(enchantmentReference -> stack.addEnchantment(enchantmentReference, enchantment.Level));
 					}
 				}
