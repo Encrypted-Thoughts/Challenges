@@ -33,6 +33,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.GameMode;
+import net.minecraft.world.WorldProperties;
 import net.minecraft.world.biome.BiomeKeys;
 
 import java.util.ArrayList;
@@ -69,8 +70,7 @@ public class ChallengesManager {
 	public static long CurrentTimerSecond;
 
 	public static void start(ServerPlayerEntity starter) {
-		Server = starter.getServer();
-		if (Server == null) return;
+		Server = starter.getEntityWorld().getServer();
 
 		if (Status != GameStatus.Idle) {
 			MessageHelper.sendSystemMessage(starter, Text.literal("Challenge already in progress.").formatted(Formatting.RED));
@@ -313,7 +313,7 @@ public class ChallengesManager {
 			player.getHungerManager().setFoodLevel(20);
 			TeleportHelper.teleport(player, world, spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5, 0, 0);
 			player.changeGameMode(GameMode.SURVIVAL);
-			player.setSpawnPoint(new ServerPlayerEntity.Respawn(player.getWorld().getRegistryKey(), spawn, 0, true),false);
+			player.setSpawnPoint(new ServerPlayerEntity.Respawn(WorldProperties.SpawnPoint.create(player.getEntityWorld().getRegistryKey(), spawn, 0.0f, 0.0f), true), false);
 		} catch (CommandSyntaxException e) {
 			ChallengesMod.LOGGER.error(e.getMessage());
 		}
@@ -326,22 +326,19 @@ public class ChallengesManager {
 
 	public static void teleportToHub(ServerPlayerEntity player) {
 		try {
-			var server = player.getServer();
-			if (server != null) {
-				var world = WorldHelper.getWorldByName(server, ChallengesMod.CONFIG.SpawnSettings.Dimension);
-				var tpPlayer = TeleportHelper.teleport(
-						player,
-						world,
-						ChallengesMod.CONFIG.SpawnSettings.HubCoords.getBlockPos().getX() + 0.5,
-						ChallengesMod.CONFIG.SpawnSettings.HubCoords.getBlockPos().getY(),
-						ChallengesMod.CONFIG.SpawnSettings.HubCoords.getBlockPos().getZ() + 0.5,
-						180,
-						0);
-				resetPlayer(tpPlayer);
-				player.changeGameMode(GameMode.ADVENTURE);
-			} else
-				ChallengesMod.LOGGER.error("Unable to teleport player: %s to spawn".formatted(PlayerHelper.getPlayerName(player)));
-		} catch (CommandSyntaxException e) {
+			var server = player.getEntityWorld().getServer();
+            var world = WorldHelper.getWorldByName(server, ChallengesMod.CONFIG.SpawnSettings.Dimension);
+            var tpPlayer = TeleportHelper.teleport(
+                    player,
+                    world,
+                    ChallengesMod.CONFIG.SpawnSettings.HubCoords.getBlockPos().getX() + 0.5,
+                    ChallengesMod.CONFIG.SpawnSettings.HubCoords.getBlockPos().getY(),
+                    ChallengesMod.CONFIG.SpawnSettings.HubCoords.getBlockPos().getZ() + 0.5,
+                    180,
+                    0);
+            resetPlayer(tpPlayer);
+            player.changeGameMode(GameMode.ADVENTURE);
+        } catch (CommandSyntaxException e) {
 			ChallengesMod.LOGGER.error("Unable to teleport player: %s to spawn".formatted(PlayerHelper.getPlayerName(player)));
 			ChallengesMod.LOGGER.error(e.getMessage());
 		}
@@ -403,7 +400,7 @@ public class ChallengesManager {
 		player.heal(player.getMaxHealth());
 		player.getHungerManager().setFoodLevel(20);
 		var world = WorldHelper.getWorldRegistryKeyByName(Server, ChallengesMod.CONFIG.SpawnSettings.Dimension);
-		player.setSpawnPoint(new ServerPlayerEntity.Respawn(world, ChallengesMod.CONFIG.SpawnSettings.HubCoords.getBlockPos(), 0, true), false);
+		player.setSpawnPoint(new ServerPlayerEntity.Respawn(WorldProperties.SpawnPoint.create(world, ChallengesMod.CONFIG.SpawnSettings.HubCoords.getBlockPos(), 0.0f, 0.0f), true), false);
 	}
 
 	public static void runAfterRespawn(ServerPlayerEntity player) {
@@ -413,19 +410,17 @@ public class ChallengesManager {
 		}
 	}
 
-	public static void givePlayerEquipment(PlayerEntity player, boolean respawn) {
+	public static void givePlayerEquipment(ServerPlayerEntity player, boolean respawn) {
 		for (var gear : StartingGear) {
 			if (!gear.OnRespawn && respawn) continue;
 
 			var item = Registries.ITEM.get(Identifier.of(gear.Name));
 			var stack = new ItemStack(item, gear.Amount);
 			if (stack.isEnchantable()) {
-				var server = player.getServer();
-				if (server != null) {
-					for (var enchantment : gear.Enchantments) {
-						var entry = server.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getEntry(Identifier.of(enchantment.Type));
-						entry.ifPresent(enchantmentReference -> stack.addEnchantment(enchantmentReference, enchantment.Level));
-					}
+				var server = player.getEntityWorld().getServer();
+				for (var enchantment : gear.Enchantments) {
+					var entry = server.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getEntry(Identifier.of(enchantment.Type));
+					entry.ifPresent(enchantmentReference -> stack.addEnchantment(enchantmentReference, enchantment.Level));
 				}
 			}
 

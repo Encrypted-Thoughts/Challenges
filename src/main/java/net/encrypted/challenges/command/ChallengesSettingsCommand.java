@@ -53,14 +53,12 @@ public class ChallengesSettingsCommand {
                                 text = Text.literal("Time Limit: ").formatted(Formatting.GREEN).append(Text.literal(TimeLimit > 0 ? TimeLimit + " Minutes" : "None").formatted(Formatting.WHITE));
                                 MessageHelper.sendSystemMessage(player, text);
 
-                                var server = player.getServer();
-                                if (server != null) {
-                                    text = Text.literal("PVP: ").formatted(Formatting.GREEN).append(Text.literal(server.isPvpEnabled() ? "YES" : "NO").formatted(Formatting.WHITE));
-                                    MessageHelper.sendSystemMessage(player, text);
+                                var server = player.getEntityWorld().getServer();
+                                text = Text.literal("PVP: ").formatted(Formatting.GREEN).append(Text.literal(server.isPvpEnabled() ? "YES" : "NO").formatted(Formatting.WHITE));
+                                MessageHelper.sendSystemMessage(player, text);
 
-                                    text = Text.literal("Keep Inventory: ").formatted(Formatting.GREEN).append(Text.literal(server.getGameRules().get(GameRules.KEEP_INVENTORY).get() ? "YES" : "NO").formatted(Formatting.WHITE));
-                                    MessageHelper.sendSystemMessage(player, text);
-                                }
+                                text = Text.literal("Keep Inventory: ").formatted(Formatting.GREEN).append(Text.literal(server.getGameRules().get(GameRules.KEEP_INVENTORY).get() ? "YES" : "NO").formatted(Formatting.WHITE));
+                                MessageHelper.sendSystemMessage(player, text);
                                 return Command.SINGLE_SUCCESS;
                             })
 

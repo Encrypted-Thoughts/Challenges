@@ -10,7 +10,6 @@ public class ChallengesCommands {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment ignoredRegistrationEnvironment) {
         ChallengesSettingsCommand.register(dispatcher, commandRegistryAccess);
-        ChallengesPVPCommand.register(dispatcher);
         ChallengesKeepInventoryCommand.register(dispatcher);
         ChallengesEndCommand.register(dispatcher);
         ChallengesStartCommand.register(dispatcher);
