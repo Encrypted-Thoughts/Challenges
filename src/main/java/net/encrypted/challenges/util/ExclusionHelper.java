@@ -1,12 +1,11 @@
 package net.encrypted.challenges.util;
 
-import net.minecraft.entity.EntityType;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 
 public class ExclusionHelper {
     public static ArrayList<Item> CreativeOnlyItems = new ArrayList<>(List.of(
@@ -121,7 +120,11 @@ public class ExclusionHelper {
             Items.ZOMBIE_VILLAGER_SPAWN_EGG,
             Items.ZOMBIFIED_PIGLIN_SPAWN_EGG,
             Items.BREEZE_SPAWN_EGG,
-            Items.CREAKING_SPAWN_EGG
+            Items.CREAKING_SPAWN_EGG,
+            Items.CAMEL_HUSK_SPAWN_EGG,
+            Items.NAUTILUS_SPAWN_EGG,
+            Items.ZOMBIE_NAUTILUS_SPAWN_EGG,
+            Items.PARCHED_SPAWN_EGG
     ));
 
     public static ArrayList<EntityType<?>> ImpossibleToKillEntities = new ArrayList<>(List.of(
@@ -312,11 +315,13 @@ public class ExclusionHelper {
             Items.WOODEN_PICKAXE,
             Items.WOODEN_SHOVEL,
             Items.WOODEN_SWORD,
+            Items.WOODEN_SPEAR,
             Items.STONE_AXE,
             Items.STONE_HOE,
             Items.STONE_PICKAXE,
             Items.STONE_SHOVEL,
             Items.STONE_SWORD,
+            Items.STONE_SPEAR,
             Items.CHAINMAIL_LEGGINGS,
             Items.CHAINMAIL_BOOTS,
             Items.CHAINMAIL_CHESTPLATE,
@@ -330,11 +335,13 @@ public class ExclusionHelper {
             Items.IRON_BOOTS,
             Items.IRON_CHESTPLATE,
             Items.IRON_HELMET,
+            Items.IRON_SPEAR,
             Items.GOLDEN_AXE,
             Items.GOLDEN_HOE,
             Items.GOLDEN_PICKAXE,
             Items.GOLDEN_SHOVEL,
             Items.GOLDEN_SWORD,
+            Items.GOLDEN_SPEAR,
             Items.GOLDEN_LEGGINGS,
             Items.GOLDEN_BOOTS,
             Items.GOLDEN_CHESTPLATE,
@@ -344,6 +351,7 @@ public class ExclusionHelper {
             Items.DIAMOND_PICKAXE,
             Items.DIAMOND_SHOVEL,
             Items.DIAMOND_SWORD,
+            Items.DIAMOND_SPEAR,
             Items.DIAMOND_LEGGINGS,
             Items.DIAMOND_BOOTS,
             Items.DIAMOND_CHESTPLATE,
@@ -353,6 +361,7 @@ public class ExclusionHelper {
             Items.NETHERITE_PICKAXE,
             Items.NETHERITE_SHOVEL,
             Items.NETHERITE_SWORD,
+            Items.NETHERITE_SPEAR,
             Items.NETHERITE_LEGGINGS,
             Items.NETHERITE_BOOTS,
             Items.NETHERITE_CHESTPLATE,
@@ -545,11 +554,17 @@ public class ExclusionHelper {
             Items.MUTTON,
             Items.ENCHANTED_GOLDEN_APPLE,
             Items.EXPERIENCE_BOTTLE,
-            Items.SADDLE,
+            Items.NETHERITE_HORSE_ARMOR,
             Items.DIAMOND_HORSE_ARMOR,
             Items.GOLDEN_HORSE_ARMOR,
             Items.IRON_HORSE_ARMOR,
+            Items.COPPER_HORSE_ARMOR,
             Items.LEATHER_HORSE_ARMOR,
+            Items.NETHERITE_NAUTILUS_ARMOR,
+            Items.DIAMOND_NAUTILUS_ARMOR,
+            Items.GOLDEN_NAUTILUS_ARMOR,
+            Items.IRON_NAUTILUS_ARMOR,
+            Items.COPPER_NAUTILUS_ARMOR,
             Items.PLAYER_HEAD,
             Items.CREEPER_HEAD,
             Items.DRAGON_HEAD,
@@ -766,8 +781,8 @@ public class ExclusionHelper {
 
     public static ArrayList<String> getPossibleItems(String filter) {
         var returnItems = new ArrayList<String>();
-        for (var item : Registries.ITEM) {
-            var id = Registries.ITEM.getId(item).toString();
+        for (var item : BuiltInRegistries.ITEM) {
+            var id = BuiltInRegistries.ITEM.getKey(item).toString();
             if (id.toLowerCase().contains(filter) && !CreativeOnlyItems.contains(item))
                 returnItems.add(id);
         }
@@ -777,7 +792,7 @@ public class ExclusionHelper {
     public static ArrayList<String> getBreakableItems(String filter) {
         var returnItems = new ArrayList<String>();
         for (var item : BreakableItems) {
-            var id = Registries.ITEM.getId(item).toString();
+            var id = BuiltInRegistries.ITEM.getKey(item).toString();
             if (id.toLowerCase().contains(filter))
                 returnItems.add(id);
         }
@@ -786,8 +801,8 @@ public class ExclusionHelper {
 
     public static ArrayList<String> getCraftableItems(String filter) {
         var returnItems = new ArrayList<String>();
-        for (var item : Registries.ITEM) {
-            var id = Registries.ITEM.getId(item).toString();
+        for (var item : BuiltInRegistries.ITEM) {
+            var id = BuiltInRegistries.ITEM.getKey(item).toString();
             if (id.toLowerCase().contains(filter) && !UncraftableItems.contains(item) && !CreativeOnlyItems.contains(item))
                 returnItems.add(id);
         }
@@ -796,8 +811,8 @@ public class ExclusionHelper {
 
     public static ArrayList<String> getPossibleBlocks(String filter) {
         var returnBlocks = new ArrayList<String>();
-        for (var block : Registries.BLOCK) {
-            var id = Registries.BLOCK.getId(block).toString();
+        for (var block : BuiltInRegistries.BLOCK) {
+            var id = BuiltInRegistries.BLOCK.getKey(block).toString();
             if (id.toLowerCase().contains(filter) && !CreativeOnlyItems.contains(block.asItem()))
                 returnBlocks.add(id);
         }
@@ -806,8 +821,8 @@ public class ExclusionHelper {
 
     public static ArrayList<String> getPossibleToKillEntities(String filter) {
         var returnEntities = new ArrayList<String>();
-        for (var entity : Registries.ENTITY_TYPE) {
-            var id = Registries.ENTITY_TYPE.getId(entity).toString();
+        for (var entity : BuiltInRegistries.ENTITY_TYPE) {
+            var id = BuiltInRegistries.ENTITY_TYPE.getKey(entity).toString();
             if (id.toLowerCase().contains(filter) && !ImpossibleToKillEntities.contains(entity))
                 returnEntities.add(id);
         }
@@ -816,8 +831,8 @@ public class ExclusionHelper {
 
     public static ArrayList<String> getPossibleToBeKillByEntities(String filter) {
         var returnEntities = new ArrayList<String>();
-        for (var entity : Registries.ENTITY_TYPE) {
-            var id = Registries.ENTITY_TYPE.getId(entity).toString();
+        for (var entity : BuiltInRegistries.ENTITY_TYPE) {
+            var id = BuiltInRegistries.ENTITY_TYPE.getKey(entity).toString();
             if (id.toLowerCase().contains(filter) && !ImpossibleToBeKillByEntities.contains(entity))
                 returnEntities.add(id);
         }
