@@ -142,7 +142,7 @@ public class ChallengesSettingsCommand {
                                                                     .then(argument("equip", BoolArgumentType.bool())
                                                                             .executes(ctx -> {
                                                                                 var stack = ItemArgument.getItem(ctx, "item");
-                                                                                var itemName = BuiltInRegistries.ITEM.getKey(stack.getItem());
+                                                                                var itemName = BuiltInRegistries.ITEM.getKey(stack.item().value());
 
                                                                                 var count = IntegerArgumentType.getInteger(ctx, "amount");
                                                                                 var onRespawn = BoolArgumentType.getBool(ctx, "respawn");
@@ -158,7 +158,7 @@ public class ChallengesSettingsCommand {
                                             .then(argument("item", ItemArgument.item(registryAccess))
                                                     .executes(ctx -> {
                                                         var stack = ItemArgument.getItem(ctx, "item");
-                                                        var itemName = BuiltInRegistries.ITEM.getKey(stack.getItem());
+                                                        var itemName = BuiltInRegistries.ITEM.getKey(stack.item().value());
                                                         MessageHelper.broadcastChat(ctx.getSource().getServer().getPlayerList(),
                                                                 Component.literal("Removing item " + itemName + " from equipment.").withStyle(ChatFormatting.WHITE));
                                                         ChallengesManager.StartingGear.removeIf(gear -> gear.Name.equals(itemName.toString()));

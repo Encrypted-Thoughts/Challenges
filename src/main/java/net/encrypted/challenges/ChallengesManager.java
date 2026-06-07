@@ -454,8 +454,10 @@ public class ChallengesManager {
 				if (world == null) return;
 
 				for (var tempWorld : server.getAllLevels()) {
-					tempWorld.setDayTime(1000);
-					tempWorld.setWeatherParameters(new java.util.Random().nextInt(0, 1000000), 0, false, false);
+					var clock = tempWorld.dimensionTypeRegistration().value().defaultClock();
+					clock.ifPresent(worldClockHolder -> tempWorld.clockManager().setTotalTicks(worldClockHolder, 1000));
+					tempWorld.resetWeatherCycle();
+					//tempWorld.setWeatherParameters(new java.util.Random().nextInt(0, 1000000), 0, false, false);
 				}
 
 				teleportPlayersToChallengeSpawn(world, GameSpawn);
