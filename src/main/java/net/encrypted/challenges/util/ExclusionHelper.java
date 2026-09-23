@@ -193,7 +193,9 @@ public class ExclusionHelper {
             EntityTypes.TNT_MINECART,
             EntityTypes.TRIDENT,
             EntityTypes.WITHER_SKULL,
-            EntityTypes.ZOMBIE_HORSE
+            EntityTypes.CUSHION,
+            EntityTypes.POPLAR_BOAT,
+            EntityTypes.POPLAR_CHEST_BOAT
     ));
 
     public static ArrayList<EntityType<?>> ImpossibleToBeKillByEntities = new ArrayList<>(List.of(
@@ -291,7 +293,10 @@ public class ExclusionHelper {
             EntityTypes.VILLAGER,
             EntityTypes.WANDERING_TRADER,
             EntityTypes.WITHER_SKULL,
-            EntityTypes.ZOMBIE_HORSE
+            EntityTypes.ZOMBIE_HORSE,
+            EntityTypes.CUSHION,
+            EntityTypes.POPLAR_BOAT,
+            EntityTypes.POPLAR_CHEST_BOAT
     ));
 
     public static ArrayList<Item> BreakableItems = new ArrayList<>(List.of(
@@ -752,7 +757,15 @@ public class ExclusionHelper {
             Items.SULFUR_SPIKE,
             Items.SULFUR_CUBE_BUCKET,
             Items.MUSIC_DISC_BOUNCE,
-            Items.CINNABAR
+            Items.CINNABAR,
+
+            Items.POPLAR_SAPLING,
+            Items.POPLAR_LOG,
+            Items.RED_SHRUB,
+            Items.RED_POPLAR_LEAVES,
+            Items.ORANGE_POPLAR_LEAVES,
+            Items.YELLOW_POPLAR_LEAVES,
+            Items.SHELF_MUSHROOM
     ));
 
     public static ArrayList<String> getPossibleItems(String filter) {
