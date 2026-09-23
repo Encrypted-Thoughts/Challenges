@@ -765,7 +765,23 @@ public class ExclusionHelper {
             Items.RED_POPLAR_LEAVES,
             Items.ORANGE_POPLAR_LEAVES,
             Items.YELLOW_POPLAR_LEAVES,
-            Items.SHELF_MUSHROOM
+            Items.SHELF_MUSHROOM,
+            Items.ABANDONED_CAMP_MAP,
+            Items.BURIED_ANCIENT_CITY_MAP,
+            Items.BURIED_MINESHAFT_MAP,
+            Items.BURIED_TREASURE_MAP,
+            Items.BURIED_TRIAL_CHAMBERS_MAP,
+            Items.DESERT_PYRAMID_MAP,
+            Items.DESERT_VILLAGE_MAP,
+            Items.JUNGLE_PYRAMID_MAP,
+            Items.OCEAN_MONUMENT_MAP,
+            Items.PLAINS_VILLAGE_MAP,
+            Items.SAVANNA_VILLAGE_MAP,
+            Items.SNOWY_VILLAGE_MAP,
+            Items.SWAMP_HUT_MAP,
+            Items.TAIGA_VILLAGE_MAP,
+            Items.WARM_OCEAN_RUINS_MAP,
+            Items.WOODLAND_MANSION_MAP
     ));
 
     public static ArrayList<String> getPossibleItems(String filter) {
